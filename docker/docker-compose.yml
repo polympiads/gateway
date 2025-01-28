@@ -1,0 +1,55 @@
+version: "3.9"
+services:
+  container_a1:
+    image: polympiads/internet
+    networks:
+      external_net:
+        ipv4_address: 192.168.0.5
+  container_a2:
+    image: polympiads/internet
+    networks:
+      external_net:
+        ipv4_address: 192.168.0.6
+
+  container_b:
+    image: polympiads/gateway
+    privileged: true
+    networks:
+      external_net:
+        ipv4_address: 192.168.0.4
+      internal_net:
+        ipv4_address: 192.168.1.4
+    environment:
+      GATEWAY_SECRET_KEY: "django-insecure-qbz8belb#fj1*)fqx8h=)w&up#@(ug1_##^2@hz-^&$cp14u#-"
+    command: ["sh", "-c", "while true; do sleep 30; done"]
+
+  container_c1:
+    image: polympiads/internal
+    networks:
+      internal_net:
+        ipv4_address: 192.168.1.5
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    command: ["sh", "-c", "while true; do sleep 30; done"]
+  container_c2:
+    image: polympiads/internal
+    networks:
+      internal_net:
+        ipv4_address: 192.168.1.6
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    command: ["sh", "-c", "while true; do sleep 30; done"]
+
+networks:
+  external_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24
+  internal_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24

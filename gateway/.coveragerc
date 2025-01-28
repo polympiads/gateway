@@ -1,0 +1,4 @@
+[run]
+omit = 
+    gateway/settings/*
+    manage.py

@@ -1,6 +1,7 @@
 
 from django.contrib import admin
 
+from mdb.models.machine import Machine
 from mdb.models.mgroup import MachineGroup
 from mdb.models.room import Room
 
@@ -14,3 +15,4 @@ class ReadOnlyAdmin (admin.ModelAdmin):
 
 admin.site.register( Room, ReadOnlyAdmin )
 admin.site.register( MachineGroup, ReadOnlyAdmin )
+admin.site.register( Machine, ReadOnlyAdmin )

@@ -2,3 +2,6 @@
 omit = 
     gateway/settings/*
     manage.py
+    gateway/asgi.py
+    gateway/wsgi.py
+    mdb/migrations/**

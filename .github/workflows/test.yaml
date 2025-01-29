@@ -25,5 +25,6 @@ jobs:
           pip install -r requirements.txt
           cd gateway
           export GATEWAY_SECRET_KEY="secret"
-          python3 -m coverage run manage.py test
+          export DJANGO_SETTINGS_MODULE="gateway.settings.init"
+          python3 -m coverage run --source=. manage.py test --parallel 1
           python3 -m coverage report --fail-under=100

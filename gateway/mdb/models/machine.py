@@ -59,3 +59,8 @@ class Machine (models.Model):
     def delete(self, *args, **kwargs):
         require_not_in_production( "Deleting machines is not allowed in production" )
         return super().delete(*args, **kwargs)
+
+    def __str__(self):
+        return f"<Machine '{self.host}' at {self.mac} in {self.room}, {self.group}>"
+    def __repr__(self):
+        return str(self)

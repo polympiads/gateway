@@ -13,7 +13,7 @@ spec   = importlib.util.spec_from_file_location( "generate_gitdata", os.path.joi
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-project = 'polyparser'
+project = 'gateway'
 copyright = '2024, polympiads'
 author = 'polympiads'
 release = '1.0'
@@ -34,7 +34,7 @@ html_static_path = ['_static']
 
 highlight_language = "python"
 
-html_version_root = "https://polympiads.github.io/polyparser/"
+html_version_root = "https://polympiads.github.io/gateway/"
 
 html_sidebars = {
    '**': ['about.html', 'searchbox.html', 'navigation.html', 'versions.html']

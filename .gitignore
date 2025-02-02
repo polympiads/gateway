@@ -3,3 +3,5 @@ db.sqlite3
 .coverage
 htmlcov
 _build
+secret.txt
+tests/clidocker/content

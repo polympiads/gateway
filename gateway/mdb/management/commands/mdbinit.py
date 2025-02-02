@@ -77,8 +77,6 @@ class Command (BaseCommand):
         if len(rooms) == 0:
             raise CommandError(f"Could not find the room with the name '{room_name}'")
         groups = MachineGroup.objects.filter(name = group_name)
-        print(MachineGroup.objects.all(), group_name)
-        print(MachineGroup.objects.filter(name = group_name))
         if len(groups) == 0:
             raise CommandError(f"Could not find the group with the name '{group_name}'")
 

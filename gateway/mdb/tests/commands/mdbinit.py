@@ -121,10 +121,3 @@ class MDBInitCommandTestCase (TransactionTestCase):
         assert had_error
         assert isinstance(error, CommandError)
         assert str(error) == "Could not find the group with the name 'group2'"
-
-"""
-export GATEWAY_SECRET_KEY="secret"
-export DJANGO_SETTINGS_MODULE="gateway.settings.init"
-cd gateway
-python3 manage.py test
-"""

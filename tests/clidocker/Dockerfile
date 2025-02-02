@@ -20,9 +20,11 @@ COPY content/gateway /app/gateway
 COPY entrypoint.sh /app/entrypoint.sh
 COPY resetdb.sh /app/resetdb.sh
 COPY manage.sh /app/manage.sh
+COPY init.sh /app/init.sh
 RUN chmod +x /app/entrypoint.sh
 RUN chmod +x /app/resetdb.sh
 RUN chmod +x /app/manage.sh
+RUN chmod +x /app/init.sh
 
 ENTRYPOINT [ "/app/entrypoint.sh" ]
 CMD ["sh", "-c", "while true; do sleep 30; done"]

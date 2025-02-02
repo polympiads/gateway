@@ -13,15 +13,14 @@ class Command:
     def __init_subclass__(cls):
         COMMAND_SUB_CLASSES.append(( cls.__module__.split(".")[-1], cls() ))
 
-    def add_arguments (self, parser: ArgumentParser):
-        pass
-    def handle (self, api: API, args):
-        pass
+    def add_arguments (self, parser: ArgumentParser): pass
+    def handle (self, api: API, args): pass
 
-def _get_all_commands ():
+def get_all_commands ():
     global CACHED_COMMANDS
 
-    if CACHED_COMMANDS: return
+    if CACHED_COMMANDS:
+        return COMMAND_SUB_CLASSES
 
     gatecli_dir  = os.path.dirname( os.path.dirname( __file__ ) )
     commands_dir = os.path.join( gatecli_dir, "commands" )
@@ -39,7 +38,7 @@ def _get_all_commands ():
 def add_commands_to_parser (argparser: ArgumentParser, dest = "command_name"):
     subparsers = argparser.add_subparsers(dest = dest)
     
-    commands = _get_all_commands()
+    commands = get_all_commands()
 
     for name, command in commands:
         parser = subparsers.add_parser( name )

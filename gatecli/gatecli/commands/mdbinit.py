@@ -27,6 +27,7 @@ class MDBInitCommand (Command):
         except Exception:
             print("DANGER, Could not parse the JSON from the response")
             print("  Content :", response.content)
+            print()
 
             content = { "error": "Invalid response content", "reasons": [ "JSON Data is invalid" ] }
             valid = False
@@ -50,7 +51,7 @@ class MDBInitCommand (Command):
                     raise error
                 return
             else:
-                content = { "error": "Missing secret in JSON", "reason": [ f"Malformed JSON {content}"] }
+                content = { "error": "Missing secret in JSON", "reasons": [ f"Malformed JSON {content}"] }
         
         print("Status code :", response.status_code)
         print("ERROR :", content.get( "error", "<No 'error' in content>" ))

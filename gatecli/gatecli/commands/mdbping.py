@@ -8,10 +8,7 @@ class PingException(Exception):
 
 
 class MDBPingCommand(Command):
-    def add_arguments(self, parser):
-        parser.add_argument("hostname", help="Name of the machine")
-    
-    def handle(self, api, args):
+    def handle(self, api, _):
         response = api.get("/api/v1/mdbping", { "secret": "secret" })
         if response.status_code != HTTP_RESPONSE_OK:
             raise PingException()

@@ -5,3 +5,10 @@ htmlcov
 _build
 secret.txt
 tests/clidocker/content
+
+# VSCode config
+.vscode
+
+# UV config
+pyproject.toml
+uv.lock

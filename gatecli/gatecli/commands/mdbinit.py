@@ -1,21 +1,15 @@
-
 import json
+
 from gatecli.core.command import Command
-
-from scapy.all import conf, get_if_hwaddr
-
 from gatecli.core.secret import SecretManager
 
-def find_mac_addresses ():
-    default_iface = conf.iface
-
-    return get_if_hwaddr( default_iface )
+from .. import utils
 
 class MDBInitCommand (Command):
     def add_arguments(self, parser):
         parser.add_argument( "hostname", help = "Name of the machine for the MDB" )
     def handle(self, api, args):
-        mac_address = find_mac_addresses()
+        mac_address = utils.find_mac_addresses()
         hostname    = args.hostname
 
         response = api.get( "/mdbinit/", { "mac": mac_address, "host": hostname } )

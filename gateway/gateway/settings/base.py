@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import datetime
 import os
 from pathlib import Path
 
@@ -95,3 +96,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_URL = "/static/"
+
+PING_INTERVAL: datetime.timedelta = datetime.timedelta(minutes=5)
+PING_INTERVAL_TOLERANCE: datetime.timedelta = datetime.timedelta(minutes=1)

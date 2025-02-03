@@ -1,5 +1,4 @@
 
-from typing import Dict
 import requests
 
 class API:
@@ -22,3 +21,4 @@ class API:
         return f"{host}/{url}"
     def get (self, url: str, *args, **kwargs):
         return requests.get( self.server_url( url ), *args, **kwargs )
+    

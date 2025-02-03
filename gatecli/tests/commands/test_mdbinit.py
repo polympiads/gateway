@@ -2,7 +2,8 @@
 import os
 import subprocess
 
-from gatecli.commands.mdbinit import MDBInitCommand, find_mac_addresses
+from gatecli.commands.mdbinit import MDBInitCommand
+from gatecli.utils import find_mac_addresses
 from gatecli.core.secret import SecretManager
 from gatecli.runner import main
 

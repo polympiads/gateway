@@ -8,6 +8,7 @@ from typing import Self
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
+from django.utils import timezone
 
 from gateway.rules import require_not_in_production
 from mdb.models.mgroup import MachineGroup
@@ -55,7 +56,7 @@ class Machine(models.Model):
         MachineGroup, on_delete=models.PROTECT, verbose_name="Group"
     )
 
-    last_ping = models.DateTimeField(verbose_name="Last ping", default=datetime.datetime.today())
+    last_ping = models.DateTimeField(verbose_name="Last ping", default=timezone.now)
 
     def allocate_secret(self):
         if self.secret:

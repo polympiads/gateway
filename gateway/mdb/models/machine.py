@@ -24,10 +24,6 @@ class ConnectionStatus(enum.Enum):
     Disconnected = enum.auto()
 
     @classmethod
-    def default() -> Self:
-        ConnectionStatus.Unknown
-
-    @classmethod
     def from_time_elapsed(time: datetime.timedelta) -> Self:
         assert isinstance(time, datetime.timedelta)
 
@@ -59,7 +55,7 @@ class Machine(models.Model):
         MachineGroup, on_delete=models.PROTECT, verbose_name="Group"
     )
 
-    last_ping = models.DateTimeField(verbose_name="Last ping", default=None)
+    last_ping = models.DateTimeField(verbose_name="Last ping", default=datetime.datetime.today())
 
     def allocate_secret(self):
         if self.secret:
@@ -94,7 +90,6 @@ class Machine(models.Model):
     
     @property
     def netstat(self):
-        if self.last_ping is None:
-            return ConnectionStatus.default()
-        else:
-            return ConnectionStatus.from_time_elapsed(datetime.date.today() - self.last_ping)
+        assert self.last_ping is not None
+        
+        return ConnectionStatus.from_time_elapsed(datetime.date.today() - self.last_ping)

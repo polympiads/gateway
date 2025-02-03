@@ -13,7 +13,6 @@ def mdbping(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         return HttpResponseBadRequest()
 
-    # print(request.GET)
     secret = request.GET.get("secret")
     if secret is None:
         return HttpResponseBadRequest()

@@ -1,7 +1,9 @@
 
 import requests
 
-class API:
+from typing import Callable
+
+class BaseAPI:
     host: str = ""
 
     def __init__(self, args):
@@ -19,6 +21,19 @@ class API:
             host = f"http://{host}"
         
         return f"{host}/{url}"
+    def get(self, url: str, *args, **kwargs):
+        raise NotImplementedError()
+
+class API(BaseAPI):
     def get (self, url: str, *args, **kwargs):
         return requests.get( self.server_url( url ), *args, **kwargs )
+
+class MockAPI(BaseAPI):
+    def __init__(self, router: Callable[[str], requests.Response], args):
+        assert callable(router)
+        super().__init__(args)
+
+        self._router = router
     
+    def get(self, url, *args, **kwargs):
+        return self._router( url, *args, **kwargs )

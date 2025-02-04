@@ -9,6 +9,9 @@ COMMAND_SUB_CLASSES = []
 
 CACHED_COMMANDS = False
 
+class CommandError(Exception):
+    pass
+
 class Command:
     def __init_subclass__(cls):
         COMMAND_SUB_CLASSES.append(( cls.__module__.split(".")[-1], cls() ))

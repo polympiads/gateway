@@ -3,8 +3,10 @@ from django.test import TestCase
 from django.core.management.base import CommandError
 from django.core.management import call_command
 
-from gateway.tests import override_init, override_production
+from gateway.tests import check_telemetry, get_test_span_exporter, override_init, override_production, using_telemetry
 from mdb.models.room import Room
+
+from opentelemetry import trace
 
 class DelRoomCommandTestCase (TestCase):
     def setUp(self):
@@ -32,3 +34,41 @@ class DelRoomCommandTestCase (TestCase):
             "This room does not exist"
         ):
             call_command( "delroom", "room3" )
+
+    @using_telemetry
+    @override_init()
+    def test_init_delroom_telemetry (self):
+        call_command( "delroom", "room1" )
+        
+        check_telemetry((
+            "Handle delroom", { 'room.name' : 'room1' },
+            [  ],
+            trace.StatusCode.UNSET, False
+        ))
+    @using_telemetry
+    @override_production()
+    def test_prod_delroom_telemetry (self):
+        with self.assertRaisesMessage(
+            CommandError,
+            "Cannot delete a room in production mode"
+        ):
+            call_command( "delroom", "room1" )
+            
+        check_telemetry((
+            "Handle delroom", { 'room.name' : 'room1' },
+            [ CommandError("Cannot delete a room in production mode") ],
+            trace.StatusCode.ERROR, False
+        ))
+    @using_telemetry
+    @override_init()
+    def test_init_delroom_does_not_exists_telemetry (self):
+        with self.assertRaisesMessage(
+            CommandError,
+            "This room does not exist"
+        ):
+            call_command( "delroom", "room3" )
+        check_telemetry((
+            "Handle delroom", { 'room.name' : 'room3' },
+            [ CommandError("This room does not exist") ],
+            trace.StatusCode.ERROR, False
+        ))

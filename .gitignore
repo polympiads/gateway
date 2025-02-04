@@ -5,6 +5,8 @@ htmlcov
 _build
 secret.txt
 tests/clidocker/content
+add-traces
+context.sh
 
 # VSCode config
 .vscode

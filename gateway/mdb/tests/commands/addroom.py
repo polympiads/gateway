@@ -3,8 +3,11 @@ from django.test import TestCase
 from django.core.management.base import CommandError
 from django.core.management import call_command
 
-from gateway.tests import override_init, override_production
+from gateway.tests import check_telemetry, get_test_span_exporter, override_init, override_production, using_telemetry
 from mdb.models.room import Room
+from opentelemetry import trace
+
+import time
 
 class AddRoomCommandTestCase (TestCase):
     @override_production()
@@ -30,3 +33,45 @@ class AddRoomCommandTestCase (TestCase):
             "A room with this name already exists"
         ):
             call_command( "addroom", "room1" )
+
+    @using_telemetry
+    @override_init()
+    def test_init_addroom_telemetry (self):
+        call_command( "addroom", "room1" )
+        check_telemetry((
+            "Handle addroom", { 'room.name' : 'room1' },
+            [  ],
+            trace.StatusCode.UNSET, False
+        ))
+    @using_telemetry
+    @override_production()
+    def test_prod_addroom_telemetry (self):
+        with self.assertRaisesMessage(
+            CommandError,
+            "Cannot create a room in production mode"
+        ):
+            call_command( "addroom", "room1" )
+        check_telemetry((
+            "Handle addroom", { 'room.name' : 'room1' },
+            [ CommandError("Cannot create a room in production mode") ],
+            trace.StatusCode.ERROR, False
+        ))
+    @using_telemetry
+    @override_init()
+    def test_init_addroom_non_unique_telemetry (self):
+        call_command( "addroom", "room1" )
+        with self.assertRaisesMessage(
+            CommandError,
+            "A room with this name already exists"
+        ):
+            call_command( "addroom", "room1" )
+
+        check_telemetry((
+            "Handle addroom", { 'room.name' : 'room1' },
+            [  ],
+            trace.StatusCode.UNSET, False
+        ), (
+            "Handle addroom", { 'room.name' : 'room1' },
+            [ CommandError("A room with this name already exists") ],
+            trace.StatusCode.ERROR, False
+        ))

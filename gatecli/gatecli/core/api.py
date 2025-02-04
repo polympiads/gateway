@@ -3,6 +3,8 @@ import requests
 
 from typing import Callable
 
+from opentelemetry.propagate import inject
+
 class BaseAPI:
     host: str = ""
 
@@ -21,12 +23,21 @@ class BaseAPI:
             host = f"http://{host}"
         
         return f"{host}/{url}"
-    def get(self, url: str, *args, **kwargs):
+    def prepare_kwargs (self, kwargs):
+        headers = kwargs.get("headers", {})
+        inject(headers)
+        kwargs["headers"] = headers
+        return kwargs
+    def _get (self, url: str, *args, **kwargs):
         raise NotImplementedError()
+    def get(self, url: str, *args, **kwargs):
+        return self._get(
+            self.server_url(url), *args, **self.prepare_kwargs( kwargs )
+        )
 
 class API(BaseAPI):
-    def get (self, url: str, *args, **kwargs):
-        return requests.get( self.server_url( url ), *args, **kwargs )
+    def _get (self, url: str, *args, **kwargs):
+        return requests.get( url, *args, **kwargs )
 
 class MockAPI(BaseAPI):
     def __init__(self, router: Callable[[str], requests.Response], args):
@@ -35,5 +46,5 @@ class MockAPI(BaseAPI):
 
         self._router = router
     
-    def get(self, url, *args, **kwargs):
+    def _get(self, url, *args, **kwargs):
         return self._router( url, *args, **kwargs )

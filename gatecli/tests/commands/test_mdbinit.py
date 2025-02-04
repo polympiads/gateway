@@ -2,7 +2,8 @@
 import os
 import subprocess
 
-from gatecli.commands.mdbinit import MDBInitCommand, find_mac_addresses
+from gatecli.commands.mdbinit import MDBInitCommand
+from gatecli.utils import find_mac_addresses
 from gatecli.core.secret import SecretManager
 from gatecli.runner import main
 
@@ -11,7 +12,8 @@ from tests.utils import capture_stdouterr, reset_server_db, using_command, uses_
 
 class MockAPI:
     def __init__(self, content, code = 200):
-        class F: pass
+        class F: 
+            pass
         self.response = F()
         self.response.content = content
         self.response.status_code = code
@@ -90,7 +92,7 @@ Causes of the error :
 @uses_secret_manager
 @using_mdbinit
 def test_mdbinit_non_unique ():
-    with capture_stdouterr() as capture1:
+    with capture_stdouterr() as _capture1:
         main([ "--host", "127.0.0.1:8000", "mdbinit", "host" ])
     with capture_stdouterr() as capture2:
         main([ "--host", "127.0.0.1:8000", "mdbinit", "host" ])

@@ -1,10 +1,12 @@
 
 import json
-from gatecli.core.command import Command
+from gatecli.core.command import Command, CommandError
 
 from scapy.all import conf, get_if_hwaddr
 
 from gatecli.core.secret import SecretManager
+
+from opentelemetry import trace
 
 def find_mac_addresses ():
     default_iface = conf.iface
@@ -18,7 +20,16 @@ class MDBInitCommand (Command):
         mac_address = find_mac_addresses()
         hostname    = args.hostname
 
-        response = api.get( "/mdbinit/", { "mac": mac_address, "host": hostname } )
+        span = trace.get_current_span()
+        span.set_attribute("local.host", hostname)
+        span.set_attribute("local.mac", mac_address)
+
+        with trace.get_tracer_provider().get_tracer("gatecli-mdbinit-gateway") \
+            .start_as_current_span( "Sending MDB Init to Gateway" ):
+            response = api.get( "/mdbinit/", { "mac": mac_address, "host": hostname } )
+
+            if response.status_code != 200:
+                trace.get_current_span().set_status( trace.StatusCode.ERROR )
 
         valid = True
         
@@ -60,3 +71,5 @@ class MDBInitCommand (Command):
         print("Causes of the error :")
         for reason in content.get('reasons', [ "<No 'reasons' in content>" ]):
             print(" -", reason)
+
+        trace.get_current_span().set_status( trace.StatusCode.ERROR )

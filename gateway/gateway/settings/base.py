@@ -95,3 +95,19 @@ AUTH_PASSWORD_VALIDATORS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_URL = "/static/"
+
+
+##################
+# OPEN TELEMETRY #
+##################
+
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+
+INSTRUMENTATION_ENABLED = os.getenv( "INSTRUMENTATION_ENABLED", "True" ).lower() == "true"
+
+OTEL_SERVER  = os.getenv( "OTEL_SERVER",  "http://127.0.0.1:4318/v1/traces" )
+OTEL_SERVICE = os.getenv( "OTEL_SERVICE", "gateway" )
+
+OTEL_SPAN_EXPORTER_FUNCTION = lambda server : OTLPSpanExporter( server )
+OTEL_SPAN_PROCESSOR_CLASS   = BatchSpanProcessor

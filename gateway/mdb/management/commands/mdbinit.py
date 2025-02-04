@@ -2,19 +2,21 @@
 from typing import Tuple
 from wsgiref.simple_server import make_server
 from django.core.management.base import BaseCommand, CommandError
-from django.core.management import call_command
 from django.forms import ValidationError
 from django.http import JsonResponse
 from django.test import override_settings
 from django.views import View
-from django.urls import path, include
+from django.urls import path
 from django.contrib import admin
 from django.core.wsgi import get_wsgi_application
 
+from gateway.utils import get_span, with_start_span
 from mdb.models.machine import Machine
 from mdb.models.mgroup import MachineGroup
 from mdb.models.room import Room
 from gateway.rules import require_not_in_production
+
+from opentelemetry import trace
 
 class MachineInitView (View):
     room  : "Room | None" = None
@@ -24,6 +26,7 @@ class MachineInitView (View):
         assert MachineInitView.room  is not None
         assert MachineInitView.group is not None
         return (MachineInitView.room, MachineInitView.group)
+    @with_start_span(__name__, "Machine Initialization")
     def get (self, request, *args, **kwargs):
         require_not_in_production( "Machine Init View should only be started in the mdbinit command." )
 
@@ -31,6 +34,9 @@ class MachineInitView (View):
 
         mac  = request.GET['mac']
         host = request.GET['host']
+        
+        get_span().set_attribute('machine.host', host)
+        get_span().set_attribute('machine.mac',  mac)
         
         try:
             machine = Machine.objects.create(
@@ -40,7 +46,10 @@ class MachineInitView (View):
                 room = room,
                 group = group
             )
+
+            get_span().set_attribute('machine.secretprefix', machine.secret[:8])
         except ValidationError as error:
+            trace.get_current_span().set_status( trace.StatusCode.ERROR )
             return JsonResponse({
                 "error"   : "Machine already exists",
                 "reasons" : error.messages

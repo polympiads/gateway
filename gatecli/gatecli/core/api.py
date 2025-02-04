@@ -2,6 +2,8 @@
 from typing import Dict
 import requests
 
+from opentelemetry.propagate import inject
+
 class API:
     host: str = ""
 
@@ -21,4 +23,7 @@ class API:
         
         return f"{host}/{url}"
     def get (self, url: str, *args, **kwargs):
+        headers = kwargs.get("headers", {})
+        inject(headers)
+        kwargs["headers"] = headers
         return requests.get( self.server_url( url ), *args, **kwargs )

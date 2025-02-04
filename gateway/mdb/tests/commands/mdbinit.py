@@ -8,11 +8,14 @@ from django.test import TransactionTestCase
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
+from gateway.tests import check_telemetry, using_telemetry
 from mdb.models.machine import Machine
 from mdb.models.mgroup import MachineGroup
 from mdb.models.room import Room
 
 from mdb.management.commands.mdbinit import Command as MDBInitCommand
+
+from opentelemetry import trace
 
 import requests
 import sys
@@ -86,6 +89,7 @@ class MDBInitCommandTestCase (TransactionTestCase):
     @test_mdbinit()
     def test_admin (self):
         assert requests.get(f"{self.server}/admin/login").status_code == 200
+    @using_telemetry
     @test_mdbinit()
     def test_mdbinit_host (self):
         assert Machine.objects.count() == 0
@@ -96,6 +100,17 @@ class MDBInitCommandTestCase (TransactionTestCase):
         assert machine.mac == "fa:fb:fc:fd:fe:ff"
         assert machine.host == "root0"
         assert response.content.decode() == "{\"secret\": \"" + machine.secret + "\"}"
+
+        check_telemetry((
+            "Machine Initialization",
+            { "machine.host": "root0", "machine.mac": "fa:fb:fc:fd:fe:ff", "machine.secretprefix" : machine.secret[:8] },
+            [  ],
+            trace.StatusCode.UNSET, True
+        ), (
+            "GET mdbinit/", None,
+            [  ],
+            trace.StatusCode.UNSET, False
+        ))
     @test_mdbinit()
     def test_mdbinit_already_exists (self):
         assert Machine.objects.count() == 0

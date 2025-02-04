@@ -1,5 +1,13 @@
+# Net
 django
-coverage
 requests
 scapy
+
+# Testing
+coverage
 pytest
+
+# Telemetry
+opentelemetry-sdk
+opentelemetry-instrumentation-django
+opentelemetry-exporter-otlp-proto-http

@@ -5,3 +5,4 @@ htmlcov
 _build
 secret.txt
 tests/clidocker/content
+context.sh

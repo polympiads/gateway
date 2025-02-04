@@ -1,12 +1,11 @@
-import datetime
-
 from django.http import (
     HttpRequest,
     HttpResponse,
     HttpResponseBadRequest,
 )
+from django.utils import timezone
 
-from .models import Machine
+from ..models import Machine
 
 
 def mdbping(request: HttpRequest) -> HttpResponse:
@@ -21,7 +20,7 @@ def mdbping(request: HttpRequest) -> HttpResponse:
     if machine is None:
         return HttpResponseBadRequest()
 
-    machine.last_ping = datetime.datetime.today()
+    machine.last_ping = timezone.now()
     machine.save()
 
     return HttpResponse()

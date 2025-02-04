@@ -8,6 +8,7 @@ from typing import Self
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
+from django.utils import timezone
 
 from gateway.rules import require_not_in_production
 from mdb.models.mgroup import MachineGroup
@@ -24,15 +25,15 @@ class ConnectionStatus(enum.Enum):
     Disconnected = enum.auto()
 
     @classmethod
-    def from_time_elapsed(time: datetime.timedelta) -> Self:
+    def from_time_elapsed(cls, time: datetime.timedelta) -> Self:
         assert isinstance(time, datetime.timedelta)
 
         if time <= settings.PING_INTERVAL + settings.PING_INTERVAL_TOLERANCE:
-            return Self.Connected
+            return cls.Connected
         elif time <= 2 * settings.PING_INTERVAL + settings.PING_INTERVAL_TOLERANCE:
-            return Self.Unknown
+            return cls.Unknown
         else:
-            return Self.Disconnected
+            return cls.Disconnected
 
 
 class Machine(models.Model):
@@ -90,6 +91,4 @@ class Machine(models.Model):
     
     @property
     def netstat(self):
-        assert self.last_ping is not None
-        
-        return ConnectionStatus.from_time_elapsed(datetime.date.today() - self.last_ping)
+        return ConnectionStatus.from_time_elapsed(timezone.now() - self.last_ping)

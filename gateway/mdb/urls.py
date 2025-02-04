@@ -1,7 +1,7 @@
 from django.urls import path
 
-from . import views
+from .views import mdbping
 
 urlpatterns = [
-    path('mdbping', views.mdbping)
+    path('mdbping', mdbping.mdbping)
 ]

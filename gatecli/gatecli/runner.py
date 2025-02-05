@@ -1,10 +1,12 @@
 
 import argparse
+import logging
 import sys
 import os
+from typing import Callable
 
 from gatecli.core.command import add_commands_to_parser
-from gatecli.core.api import API
+from gatecli.core.api import API, BaseAPI
 from gatecli.core.secret import SecretManager
 
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
@@ -14,6 +16,12 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
+# This forces scapy to stop printing warnings about pcap
+# that might interface with stdout / stderr capture
+import scapy.config
+
+scapy.config.conf.logLevel = logging.ERROR
+
 def add_env_arg ( parser: argparse.ArgumentParser, env: str, *args, **kwargs ):
     value = os.getenv( env, None )
     if value is None:
@@ -21,7 +29,7 @@ def add_env_arg ( parser: argparse.ArgumentParser, env: str, *args, **kwargs ):
     else:
         parser.add_argument( *args, default = value, **kwargs)
 
-def main (args = sys.argv[1:]):
+def main (args = sys.argv[1:], generate_api: Callable[[str], BaseAPI] = lambda host: API(host)):
     manager = SecretManager()
     parser = argparse.ArgumentParser( "Gateway Client" )
     add_env_arg( parser, "GATEWAY_API_KEY", "--api",  help = "API Key" )
@@ -43,7 +51,7 @@ def main (args = sys.argv[1:]):
         traceProvider.add_span_processor(processor)
         trace.set_tracer_provider(traceProvider)
 
-    api = API(args)
+    api = generate_api(args.host)
     
     for name, command in commands:
         if name == args.command_name:

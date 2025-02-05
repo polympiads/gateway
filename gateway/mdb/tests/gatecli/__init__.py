@@ -1,0 +1,2 @@
+
+from .mdbinit import GateCLIMDBInitTestCase

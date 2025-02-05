@@ -2,7 +2,7 @@
 import random
 from django.test import TestCase
 
-from gateway.tests import override_init
+from gateway.tests.utils import override_init
 from mdb.models.machine import Machine
 from mdb.models.mgroup import MachineGroup
 from mdb.models.room import Room

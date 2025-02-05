@@ -1,6 +1,6 @@
 
 from django.test import TestCase
-from gateway.tests import override_init, override_production
+from gateway.tests.utils import override_init, override_production
 from mdb.models.mgroup import MachineGroup
 
 from django.core.exceptions import PermissionDenied

@@ -1,7 +1,7 @@
 
 from django.forms import ValidationError
 from django.test import TestCase
-from gateway.tests import override_init, override_production
+from gateway.tests.utils import override_init, override_production
 from mdb.models import Room, MachineGroup, Machine
 
 from django.core.exceptions import PermissionDenied

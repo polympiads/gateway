@@ -111,3 +111,5 @@ OTEL_SERVICE = os.getenv( "OTEL_SERVICE", "gateway" )
 
 OTEL_SPAN_EXPORTER_FUNCTION = lambda server : OTLPSpanExporter( server )
 OTEL_SPAN_PROCESSOR_CLASS   = BatchSpanProcessor
+
+TESTING_ENABLED = False

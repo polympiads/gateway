@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.core.management.base import CommandError
 from django.core.management import call_command
 
-from gateway.tests import check_telemetry, get_test_span_exporter, override_init, override_production, using_telemetry
+from gateway.tests.utils import check_telemetry, get_test_span_exporter, override_init, override_production, using_telemetry
 from mdb.models.room import Room
 from opentelemetry import trace
 

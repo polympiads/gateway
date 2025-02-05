@@ -8,3 +8,5 @@ GATEWAY_PRODUCTION = False
 
 OTEL_SPAN_EXPORTER_FUNCTION = lambda *args : InMemorySpanExporter()
 OTEL_SPAN_PROCESSOR_CLASS   = SimpleSpanProcessor
+
+TESTING_ENABLED = True

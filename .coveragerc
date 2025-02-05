@@ -1,0 +1,11 @@
+[run]
+omit = 
+    gateway/gateway/settings/**
+    manage.py
+    gateway/asgi.py
+    gateway/wsgi.py
+    gateway/mdb/migrations/**
+    gateway/mdb/tests/**
+    gateway/**/tests/**
+    gateway/**/migrations/**
+    gatecli/gatecli/runner.py

@@ -8,7 +8,7 @@ from django.test import TransactionTestCase
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
-from gateway.tests import check_telemetry, using_telemetry
+from gateway.tests.utils import check_telemetry, using_telemetry
 from mdb.models.machine import Machine
 from mdb.models.mgroup import MachineGroup
 from mdb.models.room import Room

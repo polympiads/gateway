@@ -76,6 +76,8 @@ class Command (BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("room",  help="The name of the room being initialized")
         parser.add_argument("group", help="The name of the group being initialized")
+    def create_server (self):
+        Command.server = make_server( '127.0.0.1', 8000, get_wsgi_application() )
     def prepare_options (self, *args, **options):
         require_not_in_production( "Cannot initialize MDB in production", CommandError )
 
@@ -95,7 +97,7 @@ class Command (BaseCommand):
         MachineInitView.room  = room
         MachineInitView.group = group
 
-        Command.server = make_server( '127.0.0.1', 8000, get_wsgi_application() )
+        self.create_server()
 
     def handle(self, *args, **options):
         self.prepare_options(*args, **options)

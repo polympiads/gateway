@@ -15,6 +15,27 @@ def use_mdbinit_urls (func):
 
     return override_init()( with_url )
 
+def mock_create_server (func):
+    def custom_create_server (self):
+        class MockServer:
+            called_serve_forever = False
+            called_shutdown      = False
+            def serve_forever (self):
+                self.called_serve_forever = True
+            def shutdown (self):
+                self.called_shutdown = True
+        MDBInitCommand.server = MockServer()
+    def wrapped (*args, **kwargs):
+        create_server = MDBInitCommand.create_server
+        MDBInitCommand.create_server = custom_create_server
+        res = func(*args, **kwargs)
+        MDBInitCommand.create_server = create_server
+        return res
+
+    wrapped.__qualname__ = func.__qualname__
+    wrapped.__name__ = func.__name__
+    return wrapped
+
 BROKEN_SERVER_STDOUT_RESULT = """DANGER, Could not parse the JSON from the response
   Content : Not a JSON
 
@@ -54,6 +75,7 @@ Causes of the error :
 """
 
 class GateCLIMDBInitTestCase (TestCase):
+    @mock_create_server
     def setUp(self):
         with override_init():
             self.room = Room.objects.create(name = "room")

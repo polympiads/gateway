@@ -2,7 +2,6 @@ import datetime
 import logging
 from threading import Thread
 import threading
-from time import sleep
 from typing import Callable
 
 interval: datetime.timedelta = datetime.timedelta(seconds=2)
@@ -44,7 +43,7 @@ def unregister_update_function(function: UpdateMetricFunction | list[UpdateMetri
 
 
 class __MetricThread(Thread):
-    _stop: bool = False
+    _stop = threading.Event()
 
     def __init__(self):
         super().__init__(target=self.threaded_function)
@@ -52,8 +51,8 @@ class __MetricThread(Thread):
     def threaded_function(self):
         _logger.info('Metric thread has been launched.')
 
-        while not self._stop:
-            sleep(interval.total_seconds())
+        while not self._stop.is_set():
+            self._stop.wait(interval.total_seconds())
             _logger.info('Updating metrics...')
 
             with _lock:
@@ -61,12 +60,10 @@ class __MetricThread(Thread):
                     update_function()
     
     def stop(self):
+        _logger.info("Stopping metric thread.")
         self._stop = True
 
         return self.join()
-    
-    def __del__(self):
-        self.stop()
 
 def launch_thread():
     global __metric_thread
@@ -77,6 +74,7 @@ def launch_thread():
 
 def stop_thread():
     global __metric_thread
-    assert __metric_thread is not None
-
-    __metric_thread.join()
+    
+    if __metric_thread is not None:
+        __metric_thread.stop()
+        __metric_thread = None

@@ -1,7 +1,9 @@
 import json
-from gatecli.core.command import Command, CommandError
+from gatecli.core.command import Command
 
 from gatecli.core.secret import SecretManager
+
+from opentelemetry import trace
 
 from .. import utils
 

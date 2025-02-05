@@ -9,13 +9,26 @@ from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
+from prometheus_client import Gauge
 
+from gateway import metrics
 from gateway.rules import require_not_in_production
 from mdb.models.mgroup import MachineGroup
 from mdb.models.room import Room
 
 REGEX_MAC = r"[0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5}"
 REGEX_SECRET = r"[0-9a-fA-F]{64}"
+
+
+__gauge = Gauge('gateway_mdb_machine_netstat', documentation="The status of the machines.", labelnames=['hostname', 'status'])
+
+def __update_gauge():
+    for machine in Machine.objects.all():
+        for possible_status in ConnectionStatus:
+            value = 1 if possible_status.value == machine.netstat.value else 0
+            __gauge.labels(hostname = machine.host, status=possible_status).set(value)
+
+metrics.register_update_function(__update_gauge)
 
 
 @enum.unique

@@ -4,11 +4,13 @@ import os
 import sys
 import threading
 import time
-from django.test import TransactionTestCase
+from wsgiref.simple_server import WSGIServer
+from django.test import Client, TestCase, TransactionTestCase, override_settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
-from gateway.tests import check_telemetry, using_telemetry
+from gateway.tests.utils import check_telemetry, using_telemetry
+from mdb.tests.gatecli.mdbinit import mock_create_server, use_mdbinit_urls
 from mdb.models.machine import Machine
 from mdb.models.mgroup import MachineGroup
 from mdb.models.room import Room
@@ -20,80 +22,26 @@ from opentelemetry import trace
 import requests
 import sys
 
-@contextmanager
-def suppress_stderr():
-    """Temporarily disable stdout."""
-    original_stderr = sys.stderr
-    sys.stderr = open(os.devnull, 'w')
-    try:
-        yield
-    finally:
-        sys.stderr.close()
-        sys.stderr = original_stderr
+class MDBInitCommandTestCase (TestCase):
+    @mock_create_server
+    def setUp(self):
+        self.room  = Room.objects.create( name = "room" )
+        self.group = MachineGroup.objects.create( name = "group" )
 
-def test_mdbinit (room = "room1", group = "group1", expects_error = False):
-    def decorator (test_func):
-        def wrapped (self, *args, **kwargs):
-            time.sleep(0.25)
-            try:
-                self.prepare()
+        self.client = Client()
 
-                class _MDBThread (threading.Thread):
-                    had_error = False
-                    error = None
-                    def run (self):
-                        try:
-                            with suppress_stderr():
-                                call_command( "mdbinit", room, group )
-                        except Exception as err:
-                            self.error = err
-                            self.had_error = True
-                    
-                    def shutdown (self):
-                        MDBInitCommand.shutdown()
-                        self.join()
-                
-                if not expects_error:
-                    thread = _MDBThread()
-                    thread.daemon = True
-                    thread.start()
-                    time.sleep(0.25)
-                    test_func(self, *args, **kwargs)
-                    thread.shutdown()
-                else:
-                    thread = _MDBThread()
-                    thread.daemon = True
-                    thread.start()
-                    time.sleep(0.1)
-                    thread.shutdown()
-                    test_func(self, thread.had_error, thread.error, *args, **kwargs)
-            finally:
-                self.delete()
-        wrapped.__name__ = test_func.__name__
-        wrapped.__qualname__ = test_func.__qualname__
-        return wrapped
-    return decorator
-
-class MDBInitCommandTestCase (TransactionTestCase):
-    def prepare(self):
-        self.room  = Room.objects.create( name = "room1" )
-        self.group = MachineGroup.objects.create( name = "group1" )
-
-        self.server = "http://localhost:8000"
-        return super().setUp()
-    def delete (self):
-        Machine.objects.all().delete()
-        MachineGroup.objects.all().delete()
-        Room.objects.all().delete()
-
-    @test_mdbinit()
+        MDBInitCommand().prepare_options( room = "room", group = "group" )
+    
+    @mock_create_server
+    @use_mdbinit_urls
     def test_admin (self):
-        assert requests.get(f"{self.server}/admin/login").status_code == 200
+        assert self.client.get(f"/admin/login/").status_code == 200
     @using_telemetry
-    @test_mdbinit()
+    @mock_create_server
+    @use_mdbinit_urls
     def test_mdbinit_host (self):
         assert Machine.objects.count() == 0
-        response = requests.get(f"{self.server}/mdbinit/?mac=fa:fb:fc:fd:fe:ff&host=root0")
+        response = self.client.get(f"/mdbinit/?mac=fa:fb:fc:fd:fe:ff&host=root0")
         assert response.status_code == 200
         assert Machine.objects.count() == 1
         machine = Machine.objects.all()[0]
@@ -111,14 +59,15 @@ class MDBInitCommandTestCase (TransactionTestCase):
             [  ],
             trace.StatusCode.UNSET, False
         ))
-    @test_mdbinit()
+    @mock_create_server
+    @use_mdbinit_urls
     def test_mdbinit_already_exists (self):
         assert Machine.objects.count() == 0
-        response = requests.get(f"{self.server}/mdbinit/?mac=fa:fb:fc:fd:fe:ff&host=root0")
-        response = requests.get(f"{self.server}/mdbinit/?mac=fa:fb:fc:fd:fe:ff&host=root1")
+        response = self.client.get(f"/mdbinit/?mac=fa:fb:fc:fd:fe:ff&host=root0")
+        response = self.client.get(f"/mdbinit/?mac=fa:fb:fc:fd:fe:ff&host=root1")
         assert response.status_code == 409
         assert response.content.decode() == '{"error": "Machine already exists", "reasons": ["Machine with this MAC Address already exists."]}'
-        response = requests.get(f"{self.server}/mdbinit/?mac=fa:fb:fc:fd:fe:fe&host=root0")
+        response = self.client.get(f"/mdbinit/?mac=fa:fb:fc:fd:fe:fe&host=root0")
         assert response.status_code == 409
         assert response.content.decode() == '{"error": "Machine already exists", "reasons": ["Machine with this Host Name already exists."]}'
 
@@ -126,13 +75,48 @@ class MDBInitCommandTestCase (TransactionTestCase):
         machine = Machine.objects.all()[0]
         assert machine.mac == "fa:fb:fc:fd:fe:ff"
         assert machine.host == "root0"
-    @test_mdbinit( "room2", "group1", True )
-    def test_mdbinit_wrong_room(self, had_error, error):
-        assert had_error
-        assert isinstance(error, CommandError)
-        assert str(error) == "Could not find the room with the name 'room2'"
-    @test_mdbinit( "room1", "group2", True )
-    def test_mdbinit_wrong_group(self, had_error, error):
-        assert had_error
-        assert isinstance(error, CommandError)
-        assert str(error) == "Could not find the group with the name 'group2'"
+    
+    @mock_create_server
+    def test_mdbinit_wrong_room(self):
+        with self.assertRaisesMessage( CommandError, "Could not find the room with the name 'room2'"):
+            MDBInitCommand().handle( room = "room2", group = "group" )
+    @mock_create_server
+    def test_mdbinit_wrong_group(self):
+        with self.assertRaisesMessage( CommandError, "Could not find the group with the name 'group2'"):
+            MDBInitCommand().handle( room = "room", group = "group2" )
+    @mock_create_server
+    def test_mdbinit_handle_runs_server (self):
+        call_command("mdbinit", "room", "group")
+
+        assert MDBInitCommand.server.called_serve_forever
+        assert not MDBInitCommand.server.called_shutdown
+    @mock_create_server
+    def test_mdbinit_shutdown_stops_server (self):
+        MDBInitCommand().prepare_options( room = "room", group = "group" )
+
+        server = MDBInitCommand.server
+        assert not server.called_serve_forever
+        assert not server.called_shutdown
+        MDBInitCommand.shutdown()
+        assert not server.called_serve_forever
+        assert server.called_shutdown
+        assert MDBInitCommand.server is None
+        server.called_shutdown = False
+        MDBInitCommand.shutdown()
+        assert not server.called_serve_forever
+        assert not server.called_shutdown
+    
+    def test_mdbinit_create_server (self):
+        MDBInitCommand().create_server()
+        assert isinstance(MDBInitCommand.server, WSGIServer)
+        assert MDBInitCommand.server.server_port == 8000
+        MDBInitCommand.server.server_close()
+        
+        # Test again to validate that the server was properly closed
+        # Useful because github CI sometimes behave differently than
+        # Local tests, so we verify that this strange behaviour can't
+        # Be started by this test.
+        MDBInitCommand().create_server()
+        assert isinstance(MDBInitCommand.server, WSGIServer)
+        assert MDBInitCommand.server.server_port == 8000
+        MDBInitCommand.server.server_close()

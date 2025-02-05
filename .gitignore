@@ -5,6 +5,7 @@ htmlcov
 _build
 secret.txt
 tests/clidocker/content
+context.sh
 add-traces
 context.sh
 

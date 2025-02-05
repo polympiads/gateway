@@ -3,7 +3,7 @@ import random
 from django.http import HttpResponseBadRequest
 from django.test import TestCase, Client
 
-from gateway.tests import override_init
+from gateway.tests.utils import override_init
 from mdb.models.machine import ConnectionStatus, Machine
 from mdb.models.mgroup import MachineGroup
 from mdb.models.room import Room

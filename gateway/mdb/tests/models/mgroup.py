@@ -1,6 +1,6 @@
 
 from django.test import TestCase
-from gateway.tests import override_init
+from gateway.tests.utils import override_init
 from mdb.models.mgroup import MachineGroup
 
 class MachineGroupTestCase (TestCase):

@@ -30,6 +30,9 @@ def main():
         processor = settings.OTEL_SPAN_PROCESSOR_CLASS( get_default_span_exporter() )
         traceProvider.add_span_processor(processor)
         trace.set_tracer_provider(traceProvider)
+    if settings.TESTING_ENABLED:
+        sys.path.append( os.path.join(
+            os.path.dirname( os.path.dirname( __file__ ) ), "gatecli" ) )
 
     try:
         from django.core.management import execute_from_command_line

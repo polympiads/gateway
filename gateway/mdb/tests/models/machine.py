@@ -4,7 +4,7 @@ from django.conf import settings
 from django.test import TestCase
 from django.utils import timezone
 
-from gateway.tests import override_init
+from gateway.tests.utils import override_init
 from mdb.models.machine import ConnectionStatus, Machine
 from mdb.models.mgroup import MachineGroup
 from mdb.models.room import Room

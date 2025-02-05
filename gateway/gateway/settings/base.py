@@ -113,5 +113,7 @@ def OTEL_SPAN_EXPORTER_FUNCTION(server):
     return OTLPSpanExporter( server )
 OTEL_SPAN_PROCESSOR_CLASS   = BatchSpanProcessor
 
+TESTING_ENABLED = False
+
 PING_INTERVAL: datetime.timedelta = datetime.timedelta(minutes=5)
 PING_INTERVAL_TOLERANCE: datetime.timedelta = datetime.timedelta(minutes=1)

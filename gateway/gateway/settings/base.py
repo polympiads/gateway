@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import datetime
 import os
 from pathlib import Path
 
@@ -96,7 +97,6 @@ AUTH_PASSWORD_VALIDATORS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_URL = "/static/"
 
-
 ##################
 # OPEN TELEMETRY #
 ##################
@@ -113,3 +113,6 @@ OTEL_SPAN_EXPORTER_FUNCTION = lambda server : OTLPSpanExporter( server )
 OTEL_SPAN_PROCESSOR_CLASS   = BatchSpanProcessor
 
 TESTING_ENABLED = False
+
+PING_INTERVAL: datetime.timedelta = datetime.timedelta(minutes=5)
+PING_INTERVAL_TOLERANCE: datetime.timedelta = datetime.timedelta(minutes=1)

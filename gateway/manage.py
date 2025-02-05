@@ -14,7 +14,7 @@ from gateway.utils import get_default_span_exporter
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gateway.settings.production')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gateway.settings.init')
 
     """Instrumentation"""
     from django.conf import settings

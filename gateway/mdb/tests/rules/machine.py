@@ -39,6 +39,9 @@ class MachineRulesTestCase (TestCase):
         sec = hashlib.sha256( vs ).hexdigest()
 
         assert self.mac1.secret == sec
+
+        self.mac1.allocate_secret()
+        assert self.mac1.secret == sec
     @override_production()
     def test_machine_save_protection (self):
         with self.assertRaisesMessage(

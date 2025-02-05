@@ -1,5 +1,4 @@
 
-from typing import Dict
 import requests
 
 from opentelemetry.propagate import inject

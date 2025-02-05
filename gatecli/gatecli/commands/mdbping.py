@@ -1,5 +1,5 @@
 from gatecli.core.command import Command
-from gatecli.gatecli.core.secret import SecretManager
+from gatecli.core.secret import SecretManager
 
 HTTP_RESPONSE_OK: int = 200
 

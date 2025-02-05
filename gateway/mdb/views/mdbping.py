@@ -1,8 +1,7 @@
 import logging
 from django.http import (
     HttpRequest,
-    HttpResponse,
-    HttpResponseBadRequest,
+    JsonResponse,
 )
 from django.utils import timezone
 
@@ -36,18 +35,18 @@ def __update_gauges():
 metrics.register_update_function(__update_gauges)
 
 
-def mdbping(request: HttpRequest) -> HttpResponse:
-    if request.method == "POST":
-        return HttpResponseBadRequest()
+def mdbping(request: HttpRequest) -> JsonResponse:
+    if request.method != "GET":
+        return JsonResponse({ "error": "the request should be GET" })
 
     secret = request.GET.get("secret")
     if secret is None:
-        return HttpResponseBadRequest()
+        return JsonResponse({ "error": "missing secret param" })
 
     with __tracer.start_as_current_span("DB Query"):
         machine = Machine.objects.filter(secret=secret).first()
     if machine is None:
-        return HttpResponseBadRequest()
+        return JsonResponse({ "error": "unregistered machine in the network" })
 
     __logger.info(f"{machine} has pinged.")
     machine.last_ping = timezone.now()
@@ -55,4 +54,4 @@ def mdbping(request: HttpRequest) -> HttpResponse:
     with __tracer.start_as_current_span("DB Save"):
         machine.save()
 
-    return HttpResponse()
+    return JsonResponse({ "message": "OK" })

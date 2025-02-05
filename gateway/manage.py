@@ -10,6 +10,7 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 
+from gateway import metrics
 from gateway.utils import get_default_span_exporter
 
 def main():
@@ -42,7 +43,11 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
-    execute_from_command_line(sys.argv)
+    
+    try:
+        execute_from_command_line(sys.argv)
+    finally:
+        metrics.stop_thread()
 
 
 if __name__ == '__main__':

@@ -8,7 +8,6 @@ from typing import Callable
 from gatecli.core.command import add_commands_to_parser
 from gatecli.core.api import API, BaseAPI
 from gatecli.core.secret import SecretManager
-
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 
 from opentelemetry import trace
@@ -21,6 +20,8 @@ from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExport
 import scapy.config
 
 scapy.config.conf.logLevel = logging.ERROR
+
+from typing import Callable, Any
 
 def add_env_arg ( parser: argparse.ArgumentParser, env: str, *args, **kwargs ):
     value = os.getenv( env, None )

@@ -1,6 +1,8 @@
 
 import requests
 
+from typing import Callable
+
 from opentelemetry.propagate import inject
 
 class BaseAPI:

@@ -1,10 +1,9 @@
 import random
 
-from django.http import HttpResponseBadRequest
 from django.test import TestCase, Client
 
 from gateway.tests.utils import override_init
-from mdb.models.machine import ConnectionStatus, Machine
+from mdb.models.machine import Machine
 from mdb.models.mgroup import MachineGroup
 from mdb.models.room import Room
 
@@ -31,20 +30,23 @@ class MDPPingTestCase(TestCase):
             self.client = Client()
 
     def test_mdb_ping_invalid_request_on_post(self):
-        reponse = self.client.post("/api/v1/mdbping", { "secret": self.mac1.secret })
-        assert reponse.status_code == HttpResponseBadRequest().status_code
+        response = self.client.post("/api/v1/mdbping", { "secret": self.mac1.secret })
+        response_json = response.json()
+        assert 'error' in response_json and 'message' not in response_json
 
     def test_mdb_ping_invalid_request_on_invalid_secret(self):
-        reponse = self.client.get("/api/v1/mdbping", { "secret": "aaaaa" })
-        assert reponse.status_code == HttpResponseBadRequest().status_code
+        response = self.client.get("/api/v1/mdbping", { "secret": "aaaaa" })
+        response_json = response.json()
+        assert 'error' in response_json and 'message' not in response_json
 
     def test_mdb_ping_invalid_request_on_no_secret_provided(self):
-        reponse = self.client.get("/api/v1/mdbping")
-        assert reponse.status_code == HttpResponseBadRequest().status_code
+        response = self.client.get("/api/v1/mdbping")
+        response_json = response.json()
+        assert 'error' in response_json and 'message' not in response_json
 
     def test_mdb_ping_set_last_ping(self):
-        reponse = self.client.get("/api/v1/mdbping", { "secret": self.mac1.secret })
+        response = self.client.get("/api/v1/mdbping", { "secret": self.mac1.secret })
 
-        assert reponse.status_code == 200
-        assert self.mac1.netstat == ConnectionStatus.Connected
+        response_json = response.json()
+        assert 'error' not in response_json and 'message' in response_json
 

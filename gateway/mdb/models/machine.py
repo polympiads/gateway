@@ -24,8 +24,9 @@ __gauge = Gauge('gateway_mdb_machine_netstat', documentation="The status of the 
 
 def __update_gauge():
     for machine in Machine.objects.all():
+        netstat = machine.netstat
         for possible_status in ConnectionStatus:
-            value = 1 if possible_status.value == machine.netstat.value else 0
+            value = 1 if possible_status.value == netstat.value else 0
             __gauge.labels(hostname = machine.host, status=possible_status).set(value)
 
 metrics.register_update_function(__update_gauge)

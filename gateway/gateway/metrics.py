@@ -22,7 +22,7 @@ def register_update_function(function: UpdateMetricFunction | list[UpdateMetricF
             _registered_update_functions.append(function)
         else:
             _registered_update_functions.extend(function)
-
+    
 
 def unregister_update_function(function: UpdateMetricFunction | list[UpdateMetricFunction]):
     global _registered_update_functions
@@ -34,25 +34,31 @@ def unregister_update_function(function: UpdateMetricFunction | list[UpdateMetri
             except ValueError:
                 pass
         else:
-            for function in function:
+            for func in function:
                 try:
-                    _registered_update_functions.remove(function)
+                    _registered_update_functions.remove(func)
                 except ValueError:
                     pass
 
 
+def clear_registered_functions():
+    global _registered_update_functions
+    
+    with _lock:
+        _registered_update_functions.clear()
+
 
 class __MetricThread(Thread):
-    _stop = threading.Event()
-
     def __init__(self):
+        self._should_stop = threading.Event()
+
         super().__init__(target=self.threaded_function)
 
     def threaded_function(self):
         _logger.info('Metric thread has been launched.')
 
-        while not self._stop.is_set():
-            self._stop.wait(interval.total_seconds())
+        while not self._should_stop.is_set():
+            self._should_stop.wait(interval.total_seconds())
             _logger.info('Updating metrics...')
 
             with _lock:
@@ -61,16 +67,16 @@ class __MetricThread(Thread):
     
     def stop(self):
         _logger.info("Stopping metric thread.")
-        self._stop = True
+        self._should_stop.set()
 
-        return self.join()
+        self.join()
 
 def launch_thread():
     global __metric_thread
-    assert __metric_thread is None
-
-    __metric_thread = __MetricThread()
-    __metric_thread.start()
+    
+    if __metric_thread is None:
+        __metric_thread = __MetricThread()
+        __metric_thread.start()
 
 def stop_thread():
     global __metric_thread
@@ -78,3 +84,6 @@ def stop_thread():
     if __metric_thread is not None:
         __metric_thread.stop()
         __metric_thread = None
+
+def is_thread_running() -> bool:
+    return __metric_thread is not None

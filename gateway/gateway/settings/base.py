@@ -18,19 +18,6 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
 BASE_DIR   = Path(__file__).resolve().parent.parent.parent
-SECRET_KEY = os.getenv( 'GATEWAY_SECRET_KEY', 'django-missing' )
-
-if SECRET_KEY == 'django-missing':
-    print("DANGER : No Secret Key Setup")
-    assert False
-
-DEBUG = 'django-insecure' in SECRET_KEY
-
-if DEBUG:
-    print("WARNING : The Gateway is setup in DEBUG Mode")
-    print("DANGER : The Gateway Secret Key is INSECURE")
-if SECRET_KEY == "django-insecure-qbz8belb#fj1*)fqx8h=)w&up#@(ug1_##^2@hz-^&$cp14u#-":
-    print("DANGER : The Gateway Secret Key is the public key on Github")
 
 ALLOWED_HOSTS = [ '*' ]
 
@@ -42,7 +29,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'mdb'
+    'mdb',
+    'dhcp'
 ]
 
 MIDDLEWARE = [

@@ -11,10 +11,8 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-from . import metrics
-
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gateway.settings')
 
 application = get_wsgi_application()
 
-metrics.launch_thread()
+from mdb.metrics import *

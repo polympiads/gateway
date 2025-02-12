@@ -3,10 +3,11 @@ from io import StringIO
 import os
 import sys
 from typing import Dict, List, Tuple
-from django.test import Client, override_settings
+from django.test import Client, TestCase, override_settings
 
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from opentelemetry import trace
+from prometheus_client import REGISTRY
 import requests
 
 from gatecli.core.api import BaseAPI
@@ -119,3 +120,20 @@ class capture_stdouterr:
 
         del self.stdout_copy
         del self.stderr_copy
+
+class PrometheusTestCase(TestCase):
+    def setUp(self):
+        self.clear_metrics()
+    def tearDown(self):
+        self.clear_metrics()
+    def get_metric (self, name: str, **kwargs):
+        result = REGISTRY.get_sample_value(name, None if len(kwargs.keys()) == 0 else kwargs)
+        return result
+    def clear_metrics (self):
+        collectors = tuple(REGISTRY._collector_to_names.keys())
+        for collector in collectors:
+            try:
+                collector._metrics.clear()
+                collector._metric_init()
+            except AttributeError:
+                pass

@@ -34,6 +34,8 @@ def main():
     if settings.TESTING_ENABLED:
         sys.path.append( os.path.join(
             os.path.dirname( os.path.dirname( __file__ ) ), "gatecli" ) )
+    else:
+        metrics.launch_thread()
 
     try:
         from django.core.management import execute_from_command_line
@@ -47,7 +49,8 @@ def main():
     try:
         execute_from_command_line(sys.argv)
     finally:
-        metrics.stop_thread()
+        if not settings.TESTING_ENABLED:
+            metrics.stop_thread()
 
 
 if __name__ == '__main__':

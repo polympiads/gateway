@@ -38,6 +38,9 @@ class MetricThreadContext:
                     except ValueError:
                         pass
 
+    def get_registered_functions_list (self):
+        return list( self._registered_update_functions )
+
     def clear_registered_functions(self):
         with self._lock:
             self._registered_update_functions.clear()
@@ -65,6 +68,9 @@ def register_update_function(function: UpdateMetricFunction | list[UpdateMetricF
 def unregister_update_function(function: UpdateMetricFunction | list[UpdateMetricFunction]):
     __default_context.unregister_update_function(function)
 
+def get_registered_functions ():
+    return __default_context.get_registered_functions_list()
+
 def clear_registered_functions():
     __default_context.clear_registered_functions()
 
@@ -79,6 +85,9 @@ def is_thread_running() -> bool:
 
 def default_interval() -> datetime.timedelta:
     return __default_context.interval
+
+def set_default_interval (time: datetime.timedelta):
+    __default_context.interval = time
 
 class _MetricThread(Thread):
     def __init__(self, context: MetricThreadContext):

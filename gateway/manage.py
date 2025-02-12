@@ -35,6 +35,8 @@ def main():
         trace.set_tracer_provider(traceProvider)
     if settings.TESTING_ENABLED:
         sys.path.append( os.path.join(Path(__file__).parents[1], "gatecli" ) )
+    else:
+        metrics.launch_thread()
 
     try:
         from django.core.management import execute_from_command_line
@@ -48,7 +50,8 @@ def main():
     try:
         execute_from_command_line(sys.argv)
     finally:
-        metrics.stop_thread()
+        if not settings.TESTING_ENABLED:
+            metrics.stop_thread()
 
 
 if __name__ == '__main__':

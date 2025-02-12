@@ -10,8 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import datetime
 import os
 from pathlib import Path
+
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
 BASE_DIR   = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = os.getenv( 'GATEWAY_SECRET_KEY', 'django-missing' )
@@ -95,3 +99,21 @@ AUTH_PASSWORD_VALIDATORS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_URL = "/static/"
+
+##################
+# OPEN TELEMETRY #
+##################
+
+INSTRUMENTATION_ENABLED = os.getenv( "INSTRUMENTATION_ENABLED", "True" ).lower() == "true"
+
+OTEL_SERVER  = os.getenv( "OTEL_SERVER",  "http://127.0.0.1:4318/v1/traces" )
+OTEL_SERVICE = os.getenv( "OTEL_SERVICE", "gateway" )
+
+def OTEL_SPAN_EXPORTER_FUNCTION(server):
+    return OTLPSpanExporter( server )
+OTEL_SPAN_PROCESSOR_CLASS   = BatchSpanProcessor
+
+TESTING_ENABLED = False
+
+PING_INTERVAL: datetime.timedelta = datetime.timedelta(minutes=5)
+PING_INTERVAL_TOLERANCE: datetime.timedelta = datetime.timedelta(minutes=1)

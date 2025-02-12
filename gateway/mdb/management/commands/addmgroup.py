@@ -1,6 +1,7 @@
 
 from django.core.management.base import BaseCommand, CommandError
 
+from gateway.utils import get_span, with_start_span
 from gateway.rules import require_not_in_production
 
 from mdb.models.mgroup import MachineGroup
@@ -12,8 +13,11 @@ class Command (BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument( MGROUP_NAME_ARG, help="The name of the new machine group" )
+    @with_start_span(__name__, "Handle addmgroup")
     def handle(self, *args, **options):
         group_name = options[MGROUP_NAME_ARG]
+
+        get_span().set_attribute("group.name", group_name)
 
         require_not_in_production( "Cannot create a machine group in production mode", CommandError )
 

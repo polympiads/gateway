@@ -1,9 +1,11 @@
-
 import random
-from django.test import TestCase
 
-from gateway.tests import override_init
-from mdb.models.machine import Machine
+from django.conf import settings
+from django.test import TestCase
+from django.utils import timezone
+
+from gateway.tests.utils import override_init
+from mdb.models.machine import ConnectionStatus, Machine
 from mdb.models.mgroup import MachineGroup
 from mdb.models.room import Room
 
@@ -29,3 +31,20 @@ class MachineTestCase (TestCase):
     def test_str (self):
         assert str(self.mac1) == "<Machine 'host0' at ff:ff:ff:ff:ff:ff in <Room 'room1'>, <Machine Group 'group1'>>"
         assert repr(self.mac1) == "<Machine 'host0' at ff:ff:ff:ff:ff:ff in <Room 'room1'>, <Machine Group 'group1'>>"
+
+    def test_connection_status(self):
+        assert self.mac1.netstat == ConnectionStatus.Connected
+    
+    def test_connection_status_unknown(self):
+        self.mac1.last_ping = timezone.now() - settings.PING_INTERVAL - timezone.timedelta(minutes=2)
+
+        assert self.mac1.netstat == ConnectionStatus.Unknown
+
+    def test_connection_status_disconnected(self):
+        self.mac1.last_ping = timezone.now() - 2 * settings.PING_INTERVAL - timezone.timedelta(minutes=2)
+
+        assert self.mac1.netstat == ConnectionStatus.Disconnected
+
+    def test_connection_status_only_accepts_datetime(self):
+        with self.assertRaises(AssertionError):
+            ConnectionStatus.from_time_elapsed(None)

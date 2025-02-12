@@ -2,7 +2,7 @@
 from django.test import TestCase
 
 from mdb.models.room import Room
-from gateway.tests import override_init
+from gateway.tests.utils import override_init
 
 
 class RoomTestCase (TestCase):

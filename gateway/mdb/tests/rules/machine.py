@@ -1,7 +1,7 @@
 
 from django.forms import ValidationError
 from django.test import TestCase
-from gateway.tests import override_init, override_production
+from gateway.tests.utils import override_init, override_production
 from mdb.models import Room, MachineGroup, Machine
 
 from django.core.exceptions import PermissionDenied
@@ -38,6 +38,9 @@ class MachineRulesTestCase (TestCase):
         vs = bytes( host + "".join(L), encoding="utf-8" )
         sec = hashlib.sha256( vs ).hexdigest()
 
+        assert self.mac1.secret == sec
+
+        self.mac1.allocate_secret()
         assert self.mac1.secret == sec
     @override_production()
     def test_machine_save_protection (self):

@@ -4,7 +4,7 @@ from threading import Thread
 import threading
 from typing import Callable
 
-type UpdateMetricFunction = Callable
+UpdateMetricFunction = Callable
 
 _logger = logging.getLogger(__name__)
 

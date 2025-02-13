@@ -9,7 +9,7 @@ class IpSetFullException(Exception):
 
 
 class IpSet(models.Model):
-    ipv4_base = models.GenericIPAddressField(verbose_name='ipv4 base', protocol='IPv4')
+    ipv4_base = models.GenericIPAddressField(verbose_name='ipv4 base', protocol='IPv4', unique=True)
     submask = models.GenericIPAddressField(verbose_name='submask', protocol='IPv4')
     name = models.TextField(verbose_name='ip_set name', default='<ip_set>')
 

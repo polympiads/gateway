@@ -6,10 +6,6 @@ from django.http import (
 from django.utils import timezone
 
 from opentelemetry import trace
-from prometheus_client import Gauge
-
-from gateway import metrics
-from mdb.models.machine import ConnectionStatus
 
 from ..models import Machine
 

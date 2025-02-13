@@ -35,14 +35,11 @@ class IpSetTestCase(TestCase):
             "192.168.0.0",
         ]
 
-        actual = []
-        for _ in range(3):
-            actual.append(self.ipset.get_new_ip(actual))
-
-        self.assertEqual(expected, actual)
+        ips = [self.ipset.get_new_ip().ip for _ in range(3)]
+        self.assertEqual(expected, ips)
 
         with self.assertRaises(IpSetFullException):
-            self.ipset.get_new_ip(actual)
+            self.ipset.get_new_ip()
 
     def test_create_ipset_with_not_good_settings_is_valid(self):
         with self.assertRaises(ValidationError):

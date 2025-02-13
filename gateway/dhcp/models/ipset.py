@@ -8,6 +8,9 @@ class IpSetFullException(Exception):
         super().__init__("The ip set is full.")
 
 
+class Ip(models.Model):
+    ip = models.GenericIPAddressField(verbose_name='ip', protocol='IPv4', unique=True)
+
 class IpSet(models.Model):
     ipv4_base = models.GenericIPAddressField(verbose_name='ipv4 base', protocol='IPv4', unique=True)
     submask = models.GenericIPAddressField(verbose_name='submask', protocol='IPv4')
@@ -27,7 +30,9 @@ class IpSet(models.Model):
 
         return super().save(*args, **kwargs)
 
-    def get_new_ip(self, already_registered_ips: list[str]) -> str:
+    def get_new_ip(self) -> Ip:
+        already_registered_ips = Ip.objects.all()
+
         baseip  = ip2int(self.ipv4_base)
         submask = ip2int(self.submask)
         invmask = (2 ** 32 - 1 - submask)
@@ -39,8 +44,8 @@ class IpSet(models.Model):
             # guess is a potential result that "might work"
             guess_raw = curmask + baseip
             guess = int2ip(curmask + baseip)
-            if guess not in already_registered_ips and (guess_raw & 0xFF) != 0xFF:
-                return guess
+            if not already_registered_ips.filter(ip=guess).exists() and (guess_raw & 0xFF) != 0xFF:
+                return Ip.objects.create(ip=guess)
             
             if curmask == 0:
                 break

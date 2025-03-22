@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
 import os
+from pathlib import Path
 import sys
 
 from opentelemetry.instrumentation.django import DjangoInstrumentor
@@ -16,6 +17,7 @@ from gateway.utils import get_default_span_exporter
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gateway.settings.init')
+    # os.chdir(Path(__file__).cwd().parent)
 
     """Instrumentation"""
     from django.conf import settings
@@ -32,8 +34,7 @@ def main():
         traceProvider.add_span_processor(processor)
         trace.set_tracer_provider(traceProvider)
     if settings.TESTING_ENABLED:
-        sys.path.append( os.path.join(
-            os.path.dirname( os.path.dirname( __file__ ) ), "gatecli" ) )
+        sys.path.append( os.path.join(Path(__file__).parents[1], "gatecli" ) )
     else:
         metrics.launch_thread()
 

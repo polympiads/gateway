@@ -1,14 +1,11 @@
-
-import os
 from django.test import TestCase, override_settings
-import requests
 
 from gatecli.core.secret import SecretManager
 from mdb.models.mgroup import MachineGroup
 from mdb.models.room import Room
 
 from mdb.management.commands.mdbinit import Command as MDBInitCommand
-from gateway.tests.utils import MockedAPI, call_gatecli_command, capture_stdouterr, create_response, get_secret_file, override_init, using_secret_manager
+from gateway.tests.utils import MockedAPI, call_gatecli_command, capture_stdouterr, create_response, override_init, using_secret_manager
 
 def use_mdbinit_urls (func):
     with_url = override_settings(ROOT_URLCONF = "mdb.management.commands.mdbinit")(func)

@@ -24,10 +24,17 @@ class MachineIpEntry(models.Model):
             raise MachineRegisterError(MachineRegisterErrorKind.ALREADY_REGISTERED)
 
         ip = ip_set.get_new_ip()
+        out = cls.objects.create(ip=ip, machine=machine, ip_set=ip_set)
 
-        return cls.objects.create(ip=ip, machine=machine, ip_set=ip_set)
+        from dhcp import dnsmasq
+        dnsmasq.update_dnsmasq_config_file()
+
+        return out
     
     def delete(self):
         super().delete()
 
         self.ip.delete()
+
+        from dhcp import dnsmasq
+        dnsmasq.update_dnsmasq_config_file()

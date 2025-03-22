@@ -105,3 +105,6 @@ TESTING_ENABLED = False
 
 PING_INTERVAL: datetime.timedelta = datetime.timedelta(minutes=5)
 PING_INTERVAL_TOLERANCE: datetime.timedelta = datetime.timedelta(minutes=1)
+
+DHCP_CONFIG_PATH: str | None = None
+DHCP_CONFIG_LEASE_DURATION: int = 60
